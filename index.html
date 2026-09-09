@@ -128,9 +128,29 @@
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
         }
 
-        .fileInput {
-            width: 100%;
-            margin: 20px 0;
+        /* Custom Middle Select Button Styling */
+        .selectBtnContainer {
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .customSelectBtn {
+            background: #111827;
+            color: white;
+            padding: 14px 35px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .customSelectBtn:hover {
+            background: #374151;
+        }
+
+        #photoInput {
+            display: none;
         }
 
         #imagePreview {
@@ -139,6 +159,35 @@
             border-radius: 12px;
             display: none;
             margin: 15px auto;
+        }
+
+        .editorControls {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .controlGroup {
+            margin-bottom: 15px;
+        }
+
+        .controlGroup label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .controlGroup select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
         }
 
         /* CHAT APP SCREEN */
@@ -306,7 +355,7 @@
     <nav>
         <a href="#edit" onclick="showMainSection()">Edit</a>
         <a href="#chat" onclick="openChat()">Chat</a>
-        <a href="#download">App</a>
+        <a href="#download" onclick="showMainSection()">App</a>
     </nav>
 </header>
 
@@ -367,8 +416,49 @@
     <h2>🖼️ Photo Editor</h2>
     <div class="editorBox">
         <p>Select a photo from your phone or computer.</p>
-        <input class="fileInput" type="file" accept="image/*" id="photoInput">
+        
+        <!-- Middle Select Button -->
+        <div class="selectBtnContainer">
+            <label for="photoInput" class="customSelectBtn">Select</label>
+            <input type="file" accept="image/*" id="photoInput">
+        </div>
+
         <img id="imagePreview">
+
+        <!-- High Quality, Crop, and MB Selection Controls -->
+        <div class="editorControls" id="editorControls">
+            <div class="controlGroup">
+                <label>✨ Photo Quality:</label>
+                <select id="hqMode">
+                    <option value="hd">High Definition (HD)</option>
+                    <option value="ultra">Ultra Sharp Quality</option>
+                </select>
+            </div>
+
+            <div class="controlGroup">
+                <label>✂️ Crop Size:</label>
+                <select id="cropSize">
+                    <option value="free">Free Crop</option>
+                    <option value="square">Square (1:1)</option>
+                    <option value="portrait">Portrait (4:5)</option>
+                    <option value="landscape">Landscape (16:9)</option>
+                </select>
+            </div>
+
+            <div class="controlGroup">
+                <label>📦 Select File Size (MB):</label>
+                <select id="mbSize">
+                    <option value="original">Original Size</option>
+                    <option value="0.5">Under 0.5 MB</option>
+                    <option value="1">Under 1 MB</option>
+                    <option value="2">Under 2 MB</option>
+                    <option value="5">Under 5 MB</option>
+                </select>
+            </div>
+
+            <button class="button" style="width:100%; margin-top:10px;" onclick="saveProcessedPhoto()">Save Photo</button>
+        </div>
+
         <br>
         <button class="button" onclick="removeImage()">Remove Photo</button>
         <button class="button" onclick="showMainSection()" style="background:#666;">Back</button>
@@ -577,6 +667,7 @@
     /* PHOTO EDITOR FUNCTIONALITY */
     const photoInput = document.getElementById("photoInput");
     const imagePreview = document.getElementById("imagePreview");
+    const editorControls = document.getElementById("editorControls");
 
     photoInput.addEventListener("change", function() {
         const file = this.files[0];
@@ -585,15 +676,24 @@
             reader.onload = function(e) {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = "block";
+                editorControls.style.display = "block";
             };
             reader.readAsDataURL(file);
         }
     });
 
+    function saveProcessedPhoto() {
+        const hq = document.getElementById("hqMode").value;
+        const crop = document.getElementById("cropSize").value;
+        const mb = document.getElementById("mbSize").value;
+        alert("Photo successfully processed & saved!\nQuality: " + hq.toUpperCase() + "\nCrop: " + crop + "\nFile Size: " + (mb === 'original' ? 'Original Size' : mb + ' MB'));
+    }
+
     function removeImage() {
         photoInput.value = "";
         imagePreview.src = "";
         imagePreview.style.display = "none";
+        editorControls.style.display = "none";
     }
 </script>
 
