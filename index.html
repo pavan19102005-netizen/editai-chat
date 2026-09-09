@@ -941,38 +941,32 @@
         input.value = "";
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Simulate Bot Generating Image based on what user typed (e.g. "world", "car", etc.)
-        setTimeout(() => {
-            const botMsg = document.createElement("div");
-            botMsg.className = "aiMessage bot";
-            
-            // Generate a dynamic image canvas/placeholder representing their requested keyword
-            const canvas = document.createElement("canvas");
-            canvas.width = 400;
-            canvas.height = 300;
-            const ctx = canvas.getContext("2d");
-            
-            // Background color based on text hash/length
-            ctx.fillStyle = "#111827";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Bot Loading Message
+        const botMsg = document.createElement("div");
+        botMsg.className = "aiMessage bot";
+        botMsg.innerHTML = `Generating real photo for: <b>${promptText}</b>...`;
+        chatBox.appendChild(botMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
 
-            ctx.fillStyle = "#ffffff";
-            ctx.font = "bold 24px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText("AI Image: " + promptText.toUpperCase(), canvas.width / 2, canvas.height / 2);
+        // Fetching Real Photos using Free Pollinations AI Image API
+        const encodedPrompt = encodeURIComponent(promptText);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
 
-            const img = document.createElement("img");
-            img.src = canvas.toDataURL("image/png");
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = imageUrl;
 
-            botMsg.innerHTML = `Here is your generated image for: <b>${promptText}</b>`;
+        img.onload = function() {
+            botMsg.innerHTML = `Here is your real photo for: <b>${promptText}</b>`;
             botMsg.appendChild(img);
-
-            chatBox.appendChild(botMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
-            
-            // Add to History UI dynamically
             addToHistory(promptText);
-        }, 800);
+        };
+
+        img.onerror = function() {
+            botMsg.innerHTML = `Sorry, failed to generate photo for: <b>${promptText}</b>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
     }
 
     function loadHistoryItem(itemText) {
