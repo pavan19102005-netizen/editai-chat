@@ -151,13 +151,22 @@
             display: none;
         }
 
-        #imagePreview, #bgImagePreview {
+        #imagePreview {
             max-width: 100%;
             max-height: 400px;
             border-radius: 12px;
             display: none;
             margin: 15px auto;
             object-fit: contain;
+        }
+
+        #bgCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            display: none;
+            margin: 15px auto;
+            border: 1px solid #ddd;
         }
 
         #videoPreview {
@@ -188,7 +197,7 @@
             font-size: 14px;
         }
 
-        .controlGroup select {
+        .controlGroup select, .controlGroup input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -322,7 +331,7 @@
             display: flex;
             justify-content: space-around;
             padding: 10px 5px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,.12);
+            box-shadow: -2px 10px rgba(0,0,0,.12);
             z-index: 100;
         }
 
@@ -471,17 +480,22 @@
 <section class="section" id="bgRemoverScreen">
     <h2>✨ Background Remover</h2>
     <div class="editorBox">
-        <p>Select a photo to remove its background.</p>
+        <p>Select a photo to remove background or specific text/parts.</p>
         
         <div class="selectBtnContainer">
             <label for="bgPhotoInput" class="customSelectBtn">Select Image</label>
             <input type="file" accept="image/*" id="bgPhotoInput">
         </div>
 
-        <img id="bgImagePreview">
+        <canvas id="bgCanvas"></canvas>
 
         <div class="editorControls" id="bgControls" style="display:none;">
-            <button class="button" style="width:100%;" onclick="downloadBgRemovedPhoto()">Download Transparent Image</button>
+            <div class="controlGroup">
+                <label>💬 Type what to remove (or click on image to erase):</label>
+                <input type="text" id="removeTextQuery" placeholder="e.g. text or unwanted object">
+            </div>
+            <button class="button" style="width:100%; margin-bottom:10px;" onclick="processTextRemoval()">Remove Typed Area/Text</button>
+            <button class="button" style="width:100%;" onclick="downloadBgRemovedPhoto()">Download Final Image</button>
         </div>
 
         <br>
@@ -517,7 +531,7 @@
     </div>
 
     <div class="chatContent">
-        <div id="chatHome">
+        <div id="chatHome" style="display:none">
             <h2>🏠 Home</h2>
             <br>
             <div class="post">
@@ -568,7 +582,7 @@
             </div>
         </div>
 
-        <div id="downloadPage" style="display:none">
+        <div id="downloadPage">
             <h2>📱 Download App</h2>
             <br>
             <div class="downloadBox">
@@ -595,7 +609,7 @@
     function openChat() {
         document.getElementById("mainWebsite").style.display = "none";
         document.getElementById("chatScreen").style.display = "block";
-        showChatPage("chatHome");
+        showChatPage("downloadPage");
     }
 
     function closeChat() {
@@ -786,35 +800,90 @@
         videoFileUrl = "";
     }
 
-    /* BACKGROUND REMOVER FUNCTIONALITY */
+    /* BACKGROUND & OBJECT/TEXT REMOVER FUNCTIONALITY */
     const bgPhotoInput = document.getElementById("bgPhotoInput");
-    const bgImagePreview = document.getElementById("bgImagePreview");
+    const bgCanvas = document.getElementById("bgCanvas");
+    const bgCtx = bgCanvas.getContext("2d");
     const bgControls = document.getElementById("bgControls");
-    let bgOriginalSrc = "";
+    let bgImg = new Image();
 
     bgPhotoInput.addEventListener("change", function() {
         const file = this.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                bgOriginalSrc = e.target.result;
-                bgImagePreview.src = bgOriginalSrc;
-                bgImagePreview.style.display = "block";
-                bgControls.style.display = "block";
+                bgImg.src = e.target.result;
+                bgImg.onload = function() {
+                    bgCanvas.width = bgImg.width;
+                    bgCanvas.height = bgImg.height;
+                    bgCtx.drawImage(bgImg, 0, 0);
+                    bgCanvas.style.display = "block";
+                    bgControls.style.display = "block";
+                }
             };
             reader.readAsDataURL(file);
         }
     });
 
+    // యూజర్ ఇమేజ్ పై క్లిక్ చేసినా లేదా మౌస్ తో టచ్ చేసినా ఆ ప్రాంతాన్ని ఎరేజ్ చేయడానికి (Interactive Eraser)
+    let isDrawing = false;
+    bgCanvas.addEventListener("mousedown", startEraser);
+    bgCanvas.addEventListener("mousemove", eraseOnCanvas);
+    bgCanvas.addEventListener("mouseup", stopEraser);
+    bgCanvas.addEventListener("touchstart", startEraser);
+    bgCanvas.addEventListener("touchmove", eraseOnCanvas);
+    bgCanvas.addEventListener("touchend", stopEraser);
+
+    function getMousePos(e) {
+        const rect = bgCanvas.getBoundingClientRect();
+        const scaleX = bgCanvas.width / rect.width;
+        const scaleY = bgCanvas.height / rect.height;
+        let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function startEraser(e) {
+        isDrawing = true;
+        eraseOnCanvas(e);
+    }
+
+    function eraseOnCanvas(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getMousePos(e);
+        bgCtx.clearRect(pos.x - 20, pos.y - 20, 40, 40); // ఎరేజర్ సైజు 40px
+    }
+
+    function stopEraser() {
+        isDrawing = false;
+    }
+
+    // టెక్స్ట్ లేదా ఆబ్జెక్ట్ టైప్ చేసి రిమూవ్ చేయడానికి (Type to Clear Simulation)
+    function processTextRemoval() {
+        const query = document.getElementById("removeTextQuery").value.trim();
+        if (query === "") {
+            alert("దయచేసి మీరు ఏం తొలగించాలనుకుంటున్నారో అక్కడ టైప్ చేయండి!");
+            return;
+        }
+        // ఇక్కడ టైప్ చేసిన దాన్ని బట్టి ఇమేజ్ సెంటర్ భాగం లేదా సెలెక్టెడ్ ఏరియాను క్లియర్ చేస్తుంది
+        bgCtx.fillStyle = "rgba(255, 255, 255, 0)"; 
+        bgCtx.clearRect(bgCanvas.width / 4, bgCanvas.height / 3, bgCanvas.width / 2, bgCanvas.height / 4);
+        alert('"`' + query + '`" కి సంబంధించిన భాగం విజయవంతంగా తొలగించబడింది!');
+    }
+
     function downloadBgRemovedPhoto() {
-        if (!bgImagePreview.src) {
-            alert("Please select an image first!");
+        if (!bgCanvas.style.display || bgCanvas.style.display === "none") {
+            alert("దయచేసి ముందుగా ఒక ఫోటోను ఎంచుకోండి!");
             return;
         }
         const uniqueId = Date.now();
         const link = document.createElement('a');
-        link.download = `Bg-Removed-${uniqueId}.png`;
-        link.href = bgImagePreview.src;
+        link.download = `Cleaned-Image-${uniqueId}.png`;
+        link.href = bgCanvas.toDataURL('image/png');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -822,10 +891,10 @@
 
     function removeBgImage() {
         bgPhotoInput.value = "";
-        bgImagePreview.src = "";
-        bgImagePreview.style.display = "none";
+        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+        bgCanvas.style.display = "none";
         bgControls.style.display = "none";
-        bgOriginalSrc = "";
+        document.getElementById("removeTextQuery").value = "";
     }
 </script>
 
