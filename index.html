@@ -944,20 +944,20 @@
         // Bot Loading Message
         const botMsg = document.createElement("div");
         botMsg.className = "aiMessage bot";
-        botMsg.innerHTML = `Generating real photo for: <b>${promptText}</b>...`;
+        botMsg.innerHTML = `Generating photo for: <b>${promptText}</b>...`;
         chatBox.appendChild(botMsg);
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // Fetching Real Photos using Free Pollinations AI Image API
+        // Fetching exact real photos based on user input text
         const encodedPrompt = encodeURIComponent(promptText);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?nosharing=true&seed=${Math.floor(Math.random() * 1000000)}`;
 
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.src = imageUrl;
 
         img.onload = function() {
-            botMsg.innerHTML = `Here is your real photo for: <b>${promptText}</b>`;
+            botMsg.innerHTML = `Here is your photo for: <b>${promptText}</b>`;
             botMsg.appendChild(img);
             chatBox.scrollTop = chatBox.scrollHeight;
             addToHistory(promptText);
