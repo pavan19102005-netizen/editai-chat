@@ -683,10 +683,18 @@
     });
 
     function saveProcessedPhoto() {
-        const hq = document.getElementById("hqMode").value;
-        const crop = document.getElementById("cropSize").value;
-        const mb = document.getElementById("mbSize").value;
-        alert("Photo successfully processed & saved!\nQuality: " + hq.toUpperCase() + "\nCrop: " + crop + "\nFile Size: " + (mb === 'original' ? 'Original Size' : mb + ' MB'));
+        if (!imagePreview.src) {
+            alert("Please select a photo first!");
+            return;
+        }
+
+        // Direct Download Trigger without popup alerts
+        const link = document.createElement('a');
+        link.download = 'Edited-Photo-EditAI.png';
+        link.href = imagePreview.src;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     function removeImage() {
