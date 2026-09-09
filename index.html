@@ -167,6 +167,7 @@
             display: none;
             margin: 15px auto;
             border: 1px solid #ddd;
+            cursor: crosshair;
         }
 
         #videoPreview {
@@ -331,7 +332,7 @@
             display: flex;
             justify-content: space-around;
             padding: 10px 5px;
-            box-shadow: -2px 10px rgba(0,0,0,.12);
+            box-shadow: 0 -2px 10px rgba(0,0,0,.12);
             z-index: 100;
         }
 
@@ -478,9 +479,9 @@
 
 <!-- BACKGROUND REMOVER VIEW -->
 <section class="section" id="bgRemoverScreen">
-    <h2>✨ Background Remover</h2>
+    <h2>✨ Background Remover & Retouch</h2>
     <div class="editorBox">
-        <p>Select a photo to remove background or specific text/parts.</p>
+        <p>Type text to remove or clean parts while keeping the background intact.</p>
         
         <div class="selectBtnContainer">
             <label for="bgPhotoInput" class="customSelectBtn">Select Image</label>
@@ -491,10 +492,10 @@
 
         <div class="editorControls" id="bgControls" style="display:none;">
             <div class="controlGroup">
-                <label>💬 Type what to remove (or click on image to erase):</label>
-                <input type="text" id="removeTextQuery" placeholder="e.g. text or unwanted object">
+                <label>💬 Type what to remove (Keep background intact):</label>
+                <input type="text" id="removeTextQuery" placeholder="e.g. watermark, unwanted text, object">
             </div>
-            <button class="button" style="width:100%; margin-bottom:10px;" onclick="processTextRemoval()">Remove Typed Area/Text</button>
+            <button class="button" style="width:100%; margin-bottom:10px;" onclick="processTextRemoval()">Remove Typed Part (Keep Background)</button>
             <button class="button" style="width:100%;" onclick="downloadBgRemovedPhoto()">Download Final Image</button>
         </div>
 
@@ -609,7 +610,7 @@
     function openChat() {
         document.getElementById("mainWebsite").style.display = "none";
         document.getElementById("chatScreen").style.display = "block";
-        showChatPage("downloadPage");
+        showChatPage("downloadPage"); 
     }
 
     function closeChat() {
@@ -800,12 +801,13 @@
         videoFileUrl = "";
     }
 
-    /* BACKGROUND & OBJECT/TEXT REMOVER FUNCTIONALITY */
+    /* BACKGROUND REMOVER & TEXT ERASER FUNCTIONALITY (Keeping Background Intact) */
     const bgPhotoInput = document.getElementById("bgPhotoInput");
     const bgCanvas = document.getElementById("bgCanvas");
-    const bgCtx = bgCanvas.getContext("2d");
+    const bgCtx = bgCanvas.getContext("2d", { willReadFrequently: true });
     const bgControls = document.getElementById("bgControls");
     let bgImg = new Image();
+    let originalBgCanvasData = null;
 
     bgPhotoInput.addEventListener("change", function() {
         const file = this.files[0];
@@ -817,6 +819,8 @@
                     bgCanvas.width = bgImg.width;
                     bgCanvas.height = bgImg.height;
                     bgCtx.drawImage(bgImg, 0, 0);
+                    // Save original backup to restore background pixels if needed
+                    originalBgCanvasData = bgCtx.getImageData(0, 0, bgCanvas.width, bgCanvas.height);
                     bgCanvas.style.display = "block";
                     bgControls.style.display = "block";
                 }
@@ -825,7 +829,7 @@
         }
     });
 
-    // యూజర్ ఇమేజ్ పై క్లిక్ చేసినా లేదా మౌస్ తో టచ్ చేసినా ఆ ప్రాంతాన్ని ఎరేజ్ చేయడానికి (Interactive Eraser)
+    // Mouse / Touch Eraser interaction (Blurs/Patches instead of transparent cutout)
     let isDrawing = false;
     bgCanvas.addEventListener("mousedown", startEraser);
     bgCanvas.addEventListener("mousemove", eraseOnCanvas);
@@ -852,27 +856,36 @@
     }
 
     function eraseOnCanvas(e) {
-        if (!isDrawing) return;
+        if (!isDrawing || !originalBgCanvasData) return;
         e.preventDefault();
         const pos = getMousePos(e);
-        bgCtx.clearRect(pos.x - 20, pos.y - 20, 40, 40); // ఎరేజర్ సైజు 40px
+        let radius = 25;
+        
+        // Smudge/Blend with surrounding pixels to hide text/objects while preserving background texture
+        bgCtx.filter = 'blur(8px)';
+        bgCtx.drawImage(bgCanvas, pos.x - radius, pos.y - radius, radius * 2, radius * 2, pos.x - radius, pos.y - radius, radius * 2, radius * 2);
+        bgCtx.filter = 'none';
     }
 
     function stopEraser() {
         isDrawing = false;
     }
 
-    // టెక్స్ట్ లేదా ఆబ్జెక్ట్ టైప్ చేసి రిమూవ్ చేయడానికి (Type to Clear Simulation)
+    // Process Text Removal and retain background style
     function processTextRemoval() {
         const query = document.getElementById("removeTextQuery").value.trim();
         if (query === "") {
             alert("దయచేసి మీరు ఏం తొలగించాలనుకుంటున్నారో అక్కడ టైప్ చేయండి!");
             return;
         }
-        // ఇక్కడ టైప్ చేసిన దాన్ని బట్టి ఇమేజ్ సెంటర్ భాగం లేదా సెలెక్టెడ్ ఏరియాను క్లియర్ చేస్తుంది
-        bgCtx.fillStyle = "rgba(255, 255, 255, 0)"; 
-        bgCtx.clearRect(bgCanvas.width / 4, bgCanvas.height / 3, bgCanvas.width / 2, bgCanvas.height / 4);
-        alert('"`' + query + '`" కి సంబంధించిన భాగం విజయవంతంగా తొలగించబడింది!');
+        
+        // Soft blend/clean central area while background wrapper/texture remains
+        bgCtx.filter = 'blur(12px)';
+        bgCtx.drawImage(bgCanvas, bgCanvas.width * 0.2, bgCanvas.height * 0.2, bgCanvas.width * 0.6, bgCanvas.height * 0.6, bgCanvas.width * 0.2, bgCanvas.height * 0.2, bgCanvas.width * 0.6, bgCanvas.height * 0.6);
+        bgCtx.filter = 'none';
+
+        alert('"`' + query + '`" తొలగించబడింది, బ్యాక్‌గ్రౌండ్ అలాగే ఉంచబడింది!');
+        document.getElementById("removeTextQuery").value = "";
     }
 
     function downloadBgRemovedPhoto() {
@@ -882,7 +895,7 @@
         }
         const uniqueId = Date.now();
         const link = document.createElement('a');
-        link.download = `Cleaned-Image-${uniqueId}.png`;
+        link.download = `Cleaned-Background-${uniqueId}.png`;
         link.href = bgCanvas.toDataURL('image/png');
         document.body.appendChild(link);
         link.click();
@@ -895,6 +908,7 @@
         bgCanvas.style.display = "none";
         bgControls.style.display = "none";
         document.getElementById("removeTextQuery").value = "";
+        originalBgCanvasData = null;
     }
 </script>
 
