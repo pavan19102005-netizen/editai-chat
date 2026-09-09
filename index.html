@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>EditAI Chat - AI Editing & Chat</title>
 
     <style>
@@ -119,6 +118,13 @@
             text-align: center;
         }
 
+        /* BACKGROUND REMOVER UI */
+        #bgRemoverScreen {
+            display: none;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
         .editorBox {
             max-width: 600px;
             margin: auto;
@@ -128,7 +134,6 @@
             box-shadow: 0 3px 15px rgba(0,0,0,0.08);
         }
 
-        /* Custom Middle Select Button Styling */
         .selectBtnContainer {
             margin: 25px 0;
             text-align: center;
@@ -149,11 +154,11 @@
             background: #374151;
         }
 
-        #photoInput {
+        #photoInput, #bgPhotoInput {
             display: none;
         }
 
-        #imagePreview {
+        #imagePreview, #bgImagePreview {
             max-width: 100%;
             max-height: 400px;
             border-radius: 12px;
@@ -189,124 +194,6 @@
             border-radius: 8px;
             font-size: 14px;
             background: white;
-        }
-
-        /* AI IMAGE GENERATOR CHAT SCREEN STYLES */
-        #aiGeneratorScreen {
-            display: none;
-            padding: 20px;
-            max-width: 700px;
-            margin: auto;
-            text-align: left;
-        }
-
-        .aiGenHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-            margin-bottom: 20px;
-        }
-
-        .menuBtn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .aiChatBox {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
-            padding: 20px;
-            height: 450px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .aiMessage {
-            padding: 12px 16px;
-            border-radius: 12px;
-            max-width: 80%;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-
-        .aiMessage.bot {
-            background: #f3f4f6;
-            color: #111827;
-            align-self: flex-start;
-        }
-
-        .aiMessage.user {
-            background: #111827;
-            color: white;
-            align-self: flex-end;
-        }
-
-        .aiMessage img {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 8px;
-        }
-
-        .aiInputContainer {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .aiInputContainer input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 15px;
-            outline: none;
-        }
-
-        /* HISTORY DRAWER (3 LINES) */
-        #historyDrawer {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            background: white;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .drawerHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .historyItem {
-            padding: 10px;
-            border-bottom: 1px solid #f3f4f6;
-            cursor: pointer;
-            font-size: 14px;
-            color: #555;
-        }
-
-        .historyItem:hover {
-            background: #f9fafb;
-            color: #111827;
         }
 
         /* CHAT APP SCREEN */
@@ -470,7 +357,6 @@
 
 <header>
     <div class="logo">EditAI Chat</div>
-
     <nav>
         <a href="#edit" onclick="showMainSection()">Edit</a>
         <a href="#chat" onclick="openChat()">Chat</a>
@@ -479,29 +365,15 @@
 </header>
 
 <section class="hero">
-
     <h1>EditAI Chat</h1>
-
-    <p>
-        AI Editing and Chat Platform
-    </p>
-
-    <a class="button" href="#edit" onclick="showMainSection()">
-        Start Editing
-    </a>
-
-    <button class="button" onclick="openChat()">
-        Start Chat
-    </button>
-
+    <p>AI Editing and Chat Platform</p>
+    <a class="button" href="#edit" onclick="showMainSection()">Start Editing</a>
+    <button class="button" onclick="openChat()">Start Chat</button>
 </section>
 
 <section class="section" id="edit">
-
     <h2>AI Editing</h2>
-
     <div class="cards">
-
         <div class="card">
             <h3>🖼️ Photo Editor</h3>
             <p>Edit your photos with AI.</p>
@@ -517,17 +389,9 @@
         <div class="card">
             <h3>✨ Background Remover</h3>
             <p>Remove backgrounds from images.</p>
-            <button class="button" onclick="alert('Background Remover coming soon!')">Open</button>
+            <button class="button" onclick="openBgRemover()">Open</button>
         </div>
-
-        <div class="card">
-            <h3>🤖 AI Image Generator</h3>
-            <p>Create images using AI.</p>
-            <button class="button" onclick="openAiGenerator()">Open</button>
-        </div>
-
     </div>
-
 </section>
 
 <!-- PHOTO EDITOR VIEW -->
@@ -536,7 +400,6 @@
     <div class="editorBox">
         <p>Select a photo from your phone or computer.</p>
         
-        <!-- Middle Select Button -->
         <div class="selectBtnContainer">
             <label for="photoInput" class="customSelectBtn">Select</label>
             <input type="file" accept="image/*" id="photoInput">
@@ -544,7 +407,6 @@
 
         <img id="imagePreview">
 
-        <!-- High Quality, Crop, and MB Selection Controls -->
         <div class="editorControls" id="editorControls">
             <div class="controlGroup">
                 <label>✨ Photo Quality:</label>
@@ -564,17 +426,6 @@
                 </select>
             </div>
 
-            <div class="controlGroup">
-                <label>📦 Select File Size (MB):</label>
-                <select id="mbSize">
-                    <option value="original">Original Size</option>
-                    <option value="0.5">Under 0.5 MB</option>
-                    <option value="1">Under 1 MB</option>
-                    <option value="2">Under 2 MB</option>
-                    <option value="5">Under 5 MB</option>
-                </select>
-            </div>
-
             <button class="button" style="width:100%; margin-top:10px;" onclick="saveProcessedPhoto()">Save Photo</button>
         </div>
 
@@ -584,86 +435,57 @@
     </div>
 </section>
 
-<!-- AI IMAGE GENERATOR SCREEN -->
-<section id="aiGeneratorScreen">
-    <div class="aiGenHeader">
-        <button class="menuBtn" onclick="toggleHistoryDrawer()">☰</button>
-        <h3>🤖 AI Image Generator</h3>
-        <button class="button" style="padding:6px 12px; font-size:12px; margin:0;" onclick="showMainSection()">Back</button>
-    </div>
-
-    <!-- History Drawer -->
-    <div id="historyDrawer">
-        <div class="drawerHeader">
-            <span>📜 Google Saved History</span>
-            <button class="menuBtn" style="font-size:18px;" onclick="toggleHistoryDrawer()">✕</button>
+<!-- BACKGROUND REMOVER VIEW -->
+<section class="section" id="bgRemoverScreen">
+    <h2>✨ Background Remover</h2>
+    <div class="editorBox">
+        <p>Select a photo to remove its background.</p>
+        
+        <div class="selectBtnContainer">
+            <label for="bgPhotoInput" class="customSelectBtn">Select Image</label>
+            <input type="file" accept="image/*" id="bgPhotoInput">
         </div>
-        <div id="historyList">
-            <!-- Google saved search items loaded dynamically -->
+
+        <img id="bgImagePreview">
+
+        <div class="editorControls" id="bgControls" style="display:none;">
+            <p style="font-size:14px; color:#555; margin-bottom:12px;">Background is ready to be removed/transparent.</p>
+            <button class="button" style="width:100%;" onclick="downloadBgRemovedPhoto()">Download Transparent Image</button>
         </div>
-    </div>
 
-    <div class="aiChatBox" id="aiChatBox">
-        <div class="aiMessage bot">Hello! Type anything you saved in Google or any name to generate and load your photos automatically.</div>
-    </div>
-
-    <div class="aiInputContainer">
-        <input type="text" id="aiPromptInput" placeholder="Type what you saved in Google..." onkeypress="handleAiKeypress(event)">
-        <button class="button" style="margin:0;" onclick="sendAiPrompt()">Send</button>
+        <br>
+        <button class="button" onclick="removeBgImage()">Remove Photo</button>
+        <button class="button" onclick="showMainSection()" style="background:#666;">Back</button>
     </div>
 </section>
 
 <section class="section" id="chat">
-
     <h2>💬 Chat with Friends</h2>
-
-    <p>
-        Connect and chat with your friends on EditAI Chat.
-    </p>
-
+    <p>Connect and chat with your friends on EditAI Chat.</p>
     <br>
-
-    <button class="button" onclick="openChat()">
-        Open Chat
-    </button>
-
+    <button class="button" onclick="openChat()">Open Chat</button>
 </section>
 
 <section class="section" id="download">
-
     <h2>📱 EditAI Chat App</h2>
-
-    <p>
-        Download the EditAI Chat Android App.
-    </p>
-
+    <p>Download the EditAI Chat Android App.</p>
     <br>
-
-    <button class="button" onclick="alert('Download started!')">
-        Download App
-    </button>
-
+    <button class="button" onclick="alert('Download started!')">Download App</button>
 </section>
 
 <footer>
-
     <p>© 2026 EditAI Chat. All rights reserved.</p>
-
 </footer>
 
 </div>
 
-
 <!-- CHAT APPLICATION SCREEN -->
 <div id="chatScreen">
-
     <div class="chatHeader">
         EditAI Chat <button class="button" style="float:right; padding:6px 12px; font-size:12px;" onclick="closeChat()">Exit</button>
     </div>
 
     <div class="chatContent">
-
-        <!-- HOME -->
         <div id="chatHome">
             <h2>🏠 Home</h2>
             <br>
@@ -672,14 +494,8 @@
                 <div class="postText">Welcome to EditAI Chat! 🎉</div>
                 <button class="button" style="padding:8px 14px; font-size:14px;">❤️ Like</button>
             </div>
-            <div class="post">
-                <div class="postUser">👤 Friend</div>
-                <div class="postText">Having a great day! 😊</div>
-                <button class="button" style="padding:8px 14px; font-size:14px;">❤️ Like</button>
-            </div>
         </div>
 
-        <!-- PROFILE -->
         <div id="profilePage" style="display:none">
             <h2>👤 Profile</h2>
             <br>
@@ -687,12 +503,9 @@
                 <div class="profilePhoto">👤</div>
                 <h2>My Profile</h2>
                 <p style="color:#777;margin-top:8px">EditAI User</p>
-                <br>
-                <button class="button" onclick="alert('Edit Profile clicked')">Edit Profile</button>
             </div>
         </div>
 
-        <!-- PUBLISH -->
         <div id="publishPage" style="display:none">
             <h2>➕ Publish</h2>
             <br>
@@ -703,18 +516,15 @@
             </div>
         </div>
 
-        <!-- MESSAGES -->
         <div id="messagesPage" style="display:none">
             <h2>💬 Messages</h2>
             <br>
             <div class="messageBox">
                 <div class="message"><b>Friend 1:</b> Hello! How are you?</div>
                 <div class="message"><b>Friend 2:</b> Hey! Welcome to EditAI.</div>
-                <div class="message"><b>Friend 3:</b> Let's chat!</div>
             </div>
         </div>
 
-        <!-- FRIENDS -->
         <div id="friendsPage" style="display:none">
             <h2>👥 Friends</h2>
             <br>
@@ -725,29 +535,19 @@
                 </div>
                 <button class="button" style="padding:8px 14px; font-size:14px;" onclick="showChatPage('messagesPage')">Chat</button>
             </div>
-            <div class="friend">
-                <div class="friendInfo">
-                    <div class="friendPhoto">👤</div>
-                    <div><b>Friend 2</b><br><small>Online</small></div>
-                </div>
-                <button class="button" style="padding:8px 14px; font-size:14px;" onclick="showChatPage('messagesPage')">Chat</button>
-            </div>
         </div>
 
-        <!-- DOWNLOAD APP PAGE -->
         <div id="downloadPage" style="display:none">
             <h2>📱 Download App</h2>
             <br>
             <div class="downloadBox">
                 <h3>EditAI Chat Android App</h3>
-                <p style="color:#666; margin: 10px 0 20px;">Download the official app to chat and edit photos on the go!</p>
+                <p style="color:#666; margin: 10px 0 20px;">Download official app!</p>
                 <button class="button" onclick="alert('Download started!')">Download App Now</button>
             </div>
         </div>
-
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
     <div class="bottomNav">
         <button onclick="showChatPage('chatHome')"><span>🏠</span>Home</button>
         <button onclick="showChatPage('friendsPage')"><span>👥</span>Friends</button>
@@ -756,7 +556,6 @@
         <button onclick="showChatPage('profilePage')"><span>👤</span>Profile</button>
         <button onclick="showChatPage('downloadPage')"><span>📱</span>App</button>
     </div>
-
 </div>
 
 
@@ -781,18 +580,17 @@
         document.getElementById("editorScreen").style.display = "block";
     }
 
-    function openAiGenerator() {
+    function openBgRemover() {
         document.getElementById("edit").style.display = "none";
         document.querySelector(".hero").style.display = "none";
         document.getElementById("chat").style.display = "none";
         document.getElementById("download").style.display = "none";
-        document.getElementById("aiGeneratorScreen").style.display = "block";
-        loadGoogleSavedHistory();
+        document.getElementById("bgRemoverScreen").style.display = "block";
     }
 
     function showMainSection() {
         document.getElementById("editorScreen").style.display = "none";
-        document.getElementById("aiGeneratorScreen").style.display = "none";
+        document.getElementById("bgRemoverScreen").style.display = "none";
         document.querySelector(".hero").style.display = "block";
         document.getElementById("edit").style.display = "block";
         document.getElementById("chat").style.display = "block";
@@ -843,7 +641,6 @@
         }
     });
 
-    // Dynamic Crop Preview Function
     function applyCropEffect() {
         if (!originalImageSrc) return;
         const cropVal = document.getElementById("cropSize").value;
@@ -894,10 +691,9 @@
             alert("Please select a photo first!");
             return;
         }
-
         const uniqueId = Date.now();
         const link = document.createElement('a');
-        link.download = `Edited-Photo-EditAI-${uniqueId}.png`;
+        link.download = `Edited-Photo-${uniqueId}.png`;
         link.href = imagePreview.src;
         document.body.appendChild(link);
         link.click();
@@ -912,93 +708,47 @@
         originalImageSrc = "";
     }
 
-    /* GOOGLE SAVED HISTORY & AI GENERATOR LOGIC */
-    function toggleHistoryDrawer() {
-        const drawer = document.getElementById("historyDrawer");
-        drawer.style.display = drawer.style.display === "block" ? "none" : "block";
-    }
+    /* BACKGROUND REMOVER FUNCTIONALITY */
+    const bgPhotoInput = document.getElementById("bgPhotoInput");
+    const bgImagePreview = document.getElementById("bgImagePreview");
+    const bgControls = document.getElementById("bgControls");
+    let bgOriginalSrc = "";
 
-    function loadGoogleSavedHistory() {
-        const historyList = document.getElementById("historyList");
-        
-        // Fetching or syncing local storage / browser session data mimicking Google saved items
-        let savedItems = JSON.parse(localStorage.getItem("googleSavedItems")) || [
-            "World Image", "Nature Landscape", "Futuristic City", "Android Coding", "Firebase App"
-        ];
-
-        historyList.innerHTML = "";
-        savedItems.forEach(item => {
-            const newItem = document.createElement("div");
-            newItem.className = "historyItem";
-            newItem.textContent = "🌐 " + item;
-            newItem.onclick = function() { loadHistoryItem(item); };
-            historyList.appendChild(newItem);
-        });
-    }
-
-    function handleAiKeypress(event) {
-        if (event.key === "Enter") {
-            sendAiPrompt();
+    bgPhotoInput.addEventListener("change", function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                bgOriginalSrc = e.target.result;
+                // Simple simulation/processing to preview background removal look
+                bgImagePreview.src = bgOriginalSrc;
+                bgImagePreview.style.display = "block";
+                bgControls.style.display = "block";
+            };
+            reader.readAsDataURL(file);
         }
-    }
+    });
 
-    function sendAiPrompt() {
-        const input = document.getElementById("aiPromptInput");
-        const promptText = input.value.trim();
-        if (!promptText) return;
-
-        const chatBox = document.getElementById("aiChatBox");
-
-        // Add User Message
-        const userMsg = document.createElement("div");
-        userMsg.className = "aiMessage user";
-        userMsg.textContent = promptText;
-        chatBox.appendChild(userMsg);
-
-        input.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        // Bot Loading Message
-        const botMsg = document.createElement("div");
-        botMsg.className = "aiMessage bot";
-        botMsg.innerHTML = `Searching & fetching photo for: <b>${promptText}</b>...`;
-        chatBox.appendChild(botMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        // Fetching exact real photos based on user input text
-        const encodedPrompt = encodeURIComponent(promptText);
-        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?nosharing=true&seed=${Math.floor(Math.random() * 1000000)}`;
-
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = imageUrl;
-
-        img.onload = function() {
-            botMsg.innerHTML = `Here is your requested photo: <b>${promptText}</b>`;
-            botMsg.appendChild(img);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            saveToGoogleHistory(promptText);
-        };
-
-        img.onerror = function() {
-            botMsg.innerHTML = `Sorry, could not find photo for: <b>${promptText}</b>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
-    }
-
-    function loadHistoryItem(itemText) {
-        document.getElementById("aiPromptInput").value = itemText;
-        toggleHistoryDrawer();
-        sendAiPrompt();
-    }
-
-    function saveToGoogleHistory(text) {
-        let savedItems = JSON.parse(localStorage.getItem("googleSavedItems")) || [];
-        if (!savedItems.includes(text)) {
-            savedItems.unshift(text);
-            localStorage.setItem("googleSavedItems", JSON.stringify(savedItems));
-            loadGoogleSavedHistory();
+    function downloadBgRemovedPhoto() {
+        if (!bgImagePreview.src) {
+            alert("Please select an image first!");
+            return;
         }
+        const uniqueId = Date.now();
+        const link = document.createElement('a');
+        link.download = `Bg-Removed-${uniqueId}.png`;
+        link.href = bgImagePreview.src;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function removeBgImage() {
+        bgPhotoInput.value = "";
+        bgImagePreview.src = "";
+        bgImagePreview.style.display = "none";
+        bgControls.style.display = "none";
+        bgOriginalSrc = "";
     }
 </script>
 
