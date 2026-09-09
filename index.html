@@ -112,7 +112,7 @@
         }
 
         /* EDITOR UI */
-        #editorScreen, #bgRemoverScreen, #videoEditorScreen {
+        #editorScreen, #videoEditorScreen {
             display: none;
             padding: 40px 20px;
             text-align: center;
@@ -147,7 +147,7 @@
             background: #374151;
         }
 
-        #photoInput, #bgPhotoInput, #videoInput {
+        #photoInput, #videoInput {
             display: none;
         }
 
@@ -158,15 +158,6 @@
             display: none;
             margin: 15px auto;
             object-fit: contain;
-        }
-
-        #bgCanvas {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            display: none;
-            margin: 15px auto;
-            border: 1px solid #ddd;
         }
 
         #videoPreview {
@@ -197,7 +188,7 @@
             font-size: 14px;
         }
 
-        .controlGroup select, .controlGroup input[type="text"] {
+        .controlGroup select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -395,12 +386,6 @@
             <p>Edit your videos easily.</p>
             <button class="button" onclick="openVideoEditor()">Open</button>
         </div>
-
-        <div class="card">
-            <h3>✨ Background Remover</h3>
-            <p>Remove backgrounds from images.</p>
-            <button class="button" onclick="openBgRemover()">Open</button>
-        </div>
     </div>
 </section>
 
@@ -472,34 +457,6 @@
 
         <br>
         <button class="button" onclick="removeVideo()">Remove Video</button>
-        <button class="button" onclick="showMainSection()" style="background:#666;">Back</button>
-    </div>
-</section>
-
-<!-- BACKGROUND REMOVER VIEW -->
-<section class="section" id="bgRemoverScreen">
-    <h2>✨ Object & Text Remover</h2>
-    <div class="editorBox">
-        <p>Type text/object name below and click remove.</p>
-        
-        <div class="selectBtnContainer">
-            <label for="bgPhotoInput" class="customSelectBtn">Select Image</label>
-            <input type="file" accept="image/*" id="bgPhotoInput">
-        </div>
-
-        <canvas id="bgCanvas"></canvas>
-
-        <div class="editorControls" id="bgControls" style="display:none;">
-            <div class="controlGroup">
-                <label>💬 Type what to remove:</label>
-                <input type="text" id="removeTextQuery" placeholder="e.g. text, watermark, object">
-            </div>
-            <button class="button" style="width:100%; margin-bottom:10px;" onclick="processTextRemoval()">Remove Typed Part</button>
-            <button class="button" style="width:100%;" onclick="downloadBgRemovedPhoto()">Download Final Image</button>
-        </div>
-
-        <br>
-        <button class="button" onclick="removeBgImage()">Remove Photo</button>
         <button class="button" onclick="showMainSection()" style="background:#666;">Back</button>
     </div>
 </section>
@@ -633,18 +590,9 @@
         document.getElementById("videoEditorScreen").style.display = "block";
     }
 
-    function openBgRemover() {
-        document.getElementById("edit").style.display = "none";
-        document.querySelector(".hero").style.display = "none";
-        document.getElementById("chat").style.display = "none";
-        document.getElementById("download").style.display = "none";
-        document.getElementById("bgRemoverScreen").style.display = "block";
-    }
-
     function showMainSection() {
         document.getElementById("editorScreen").style.display = "none";
         document.getElementById("videoEditorScreen").style.display = "none";
-        document.getElementById("bgRemoverScreen").style.display = "none";
         document.querySelector(".hero").style.display = "block";
         document.getElementById("edit").style.display = "block";
         document.getElementById("chat").style.display = "block";
@@ -798,67 +746,6 @@
         videoPreview.style.display = "none";
         videoControls.style.display = "none";
         videoFileUrl = "";
-    }
-
-    /* BACKGROUND / TEXT REMOVER FUNCTIONALITY (Pure Type-to-Remove, No Touch/Blur) */
-    const bgPhotoInput = document.getElementById("bgPhotoInput");
-    const bgCanvas = document.getElementById("bgCanvas");
-    const bgCtx = bgCanvas.getContext("2d", { willReadFrequently: true });
-    const bgControls = document.getElementById("bgControls");
-    let bgImg = new Image();
-
-    bgPhotoInput.addEventListener("change", function() {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                bgImg.src = e.target.result;
-                bgImg.onload = function() {
-                    bgCanvas.width = bgImg.width;
-                    bgCanvas.height = bgImg.height;
-                    bgCtx.drawImage(bgImg, 0, 0);
-                    bgCanvas.style.display = "block";
-                    bgControls.style.display = "block";
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Process Text Removal based strictly on input text query (No Touch / No Blur)
-    function processTextRemoval() {
-        const query = document.getElementById("removeTextQuery").value.trim();
-        if (query === "") {
-            alert("దయచేసి మీరు ఏం తొలగించాలనుకుంటున్నారో అక్కడ టైప్ చేయండి!");
-            return;
-        }
-        
-        // Clears the specified target area cleanly without adding any blur or touch effects
-        bgCtx.clearRect(bgCanvas.width * 0.1, bgCanvas.height * 0.1, bgCanvas.width * 0.8, bgCanvas.height * 0.8);
-        alert('"`' + query + '`" విజయవంతంగా తొలగించబడింది!');
-        document.getElementById("removeTextQuery").value = "";
-    }
-
-    function downloadBgRemovedPhoto() {
-        if (!bgCanvas.style.display || bgCanvas.style.display === "none") {
-            alert("దయచేసి ముందుగా ఒక ఫోటోను ఎంచుకోండి!");
-            return;
-        }
-        const uniqueId = Date.now();
-        const link = document.createElement('a');
-        link.download = `Cleaned-Image-${uniqueId}.png`;
-        link.href = bgCanvas.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    function removeBgImage() {
-        bgPhotoInput.value = "";
-        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-        bgCanvas.style.display = "none";
-        bgControls.style.display = "none";
-        document.getElementById("removeTextQuery").value = "";
     }
 </script>
 
