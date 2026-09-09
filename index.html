@@ -191,6 +191,124 @@
             background: white;
         }
 
+        /* AI IMAGE GENERATOR CHAT SCREEN STYLES */
+        #aiGeneratorScreen {
+            display: none;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+            text-align: left;
+        }
+
+        .aiGenHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .menuBtn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .aiChatBox {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            padding: 20px;
+            height: 450px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .aiMessage {
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .aiMessage.bot {
+            background: #f3f4f6;
+            color: #111827;
+            align-self: flex-start;
+        }
+
+        .aiMessage.user {
+            background: #111827;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .aiMessage img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .aiInputContainer {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .aiInputContainer input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        /* HISTORY DRAWER (3 LINES) */
+        #historyDrawer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .drawerHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .historyItem {
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .historyItem:hover {
+            background: #f9fafb;
+            color: #111827;
+        }
+
         /* CHAT APP SCREEN */
         #chatScreen {
             display: none;
@@ -405,7 +523,7 @@
         <div class="card">
             <h3>🤖 AI Image Generator</h3>
             <p>Create images using AI.</p>
-            <button class="button" onclick="alert('AI Image Generator coming soon!')">Open</button>
+            <button class="button" onclick="openAiGenerator()">Open</button>
         </div>
 
     </div>
@@ -463,6 +581,37 @@
         <br>
         <button class="button" onclick="removeImage()">Remove Photo</button>
         <button class="button" onclick="showMainSection()" style="background:#666;">Back</button>
+    </div>
+</section>
+
+<!-- AI IMAGE GENERATOR SCREEN -->
+<section id="aiGeneratorScreen">
+    <div class="aiGenHeader">
+        <button class="menuBtn" onclick="toggleHistoryDrawer()">☰</button>
+        <h3>🤖 AI Image Generator</h3>
+        <button class="button" style="padding:6px 12px; font-size:12px; margin:0;" onclick="showMainSection()">Back</button>
+    </div>
+
+    <!-- History Drawer -->
+    <div id="historyDrawer">
+        <div class="drawerHeader">
+            <span>📜 History</span>
+            <button class="menuBtn" style="font-size:18px;" onclick="toggleHistoryDrawer()">✕</button>
+        </div>
+        <div id="historyList">
+            <div class="historyItem" onclick="loadHistoryItem('World Image')">🌍 World Image</div>
+            <div class="historyItem" onclick="loadHistoryItem('Nature Landscape')">🌿 Nature Landscape</div>
+            <div class="historyItem" onclick="loadHistoryItem('Futuristic City')">🏙️ Futuristic City</div>
+        </div>
+    </div>
+
+    <div class="aiChatBox" id="aiChatBox">
+        <div class="aiMessage bot">Hello! Type any name (e.g., "World", "Nature", "Car") to generate and receive your AI photo.</div>
+    </div>
+
+    <div class="aiInputContainer">
+        <input type="text" id="aiPromptInput" placeholder="Type a name or prompt (e.g. World)..." onkeypress="handleAiKeypress(event)">
+        <button class="button" style="margin:0;" onclick="sendAiPrompt()">Send</button>
     </div>
 </section>
 
@@ -634,8 +783,17 @@
         document.getElementById("editorScreen").style.display = "block";
     }
 
+    function openAiGenerator() {
+        document.getElementById("edit").style.display = "none";
+        document.querySelector(".hero").style.display = "none";
+        document.getElementById("chat").style.display = "none";
+        document.getElementById("download").style.display = "none";
+        document.getElementById("aiGeneratorScreen").style.display = "block";
+    }
+
     function showMainSection() {
         document.getElementById("editorScreen").style.display = "none";
+        document.getElementById("aiGeneratorScreen").style.display = "none";
         document.querySelector(".hero").style.display = "block";
         document.getElementById("edit").style.display = "block";
         document.getElementById("chat").style.display = "block";
@@ -738,7 +896,6 @@
             return;
         }
 
-        // Unique Timestamp ID to allow downloading multiple times without conflict
         const uniqueId = Date.now();
         const link = document.createElement('a');
         link.download = `Edited-Photo-EditAI-${uniqueId}.png`;
@@ -754,6 +911,83 @@
         imagePreview.style.display = "none";
         editorControls.style.display = "none";
         originalImageSrc = "";
+    }
+
+    /* AI IMAGE GENERATOR CHAT & HISTORY LOGIC */
+    function toggleHistoryDrawer() {
+        const drawer = document.getElementById("historyDrawer");
+        drawer.style.display = drawer.style.display === "block" ? "none" : "block";
+    }
+
+    function handleAiKeypress(event) {
+        if (event.key === "Enter") {
+            sendAiPrompt();
+        }
+    }
+
+    function sendAiPrompt() {
+        const input = document.getElementById("aiPromptInput");
+        const promptText = input.value.trim();
+        if (!promptText) return;
+
+        const chatBox = document.getElementById("aiChatBox");
+
+        // Add User Message
+        const userMsg = document.createElement("div");
+        userMsg.className = "aiMessage user";
+        userMsg.textContent = promptText;
+        chatBox.appendChild(userMsg);
+
+        input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Simulate Bot Generating Image based on what user typed (e.g. "world", "car", etc.)
+        setTimeout(() => {
+            const botMsg = document.createElement("div");
+            botMsg.className = "aiMessage bot";
+            
+            // Generate a dynamic image canvas/placeholder representing their requested keyword
+            const canvas = document.createElement("canvas");
+            canvas.width = 400;
+            canvas.height = 300;
+            const ctx = canvas.getContext("2d");
+            
+            // Background color based on text hash/length
+            ctx.fillStyle = "#111827";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 24px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("AI Image: " + promptText.toUpperCase(), canvas.width / 2, canvas.height / 2);
+
+            const img = document.createElement("img");
+            img.src = canvas.toDataURL("image/png");
+
+            botMsg.innerHTML = `Here is your generated image for: <b>${promptText}</b>`;
+            botMsg.appendChild(img);
+
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // Add to History UI dynamically
+            addToHistory(promptText);
+        }, 800);
+    }
+
+    function loadHistoryItem(itemText) {
+        document.getElementById("aiPromptInput").value = itemText;
+        toggleHistoryDrawer();
+        sendAiPrompt();
+    }
+
+    function addToHistory(text) {
+        const historyList = document.getElementById("historyList");
+        const newItem = document.createElement("div");
+        newItem.className = "historyItem";
+        newItem.textContent = "✨ " + text;
+        newItem.onclick = function() { loadHistoryItem(text); };
+        historyList.prepend(newItem);
     }
 </script>
 
