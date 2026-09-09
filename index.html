@@ -404,16 +404,17 @@
 
         <div class="editorControls" id="editorControls">
             <div class="controlGroup">
-                <label>✨ Photo Quality:</label>
+                <label>✨ Photo Quality & Size (MB/Resolution):</label>
                 <select id="hqMode">
-                    <option value="hd">High Definition (HD)</option>
-                    <option value="ultra">Ultra Sharp Quality</option>
+                    <option value="hd">Full HD (1080p - High Quality)</option>
+                    <option value="ultra">4K Ultra HD (Maximum Size & Sharpness)</option>
+                    <option value="compressed">Compressed (Lightweight MB)</option>
                 </select>
             </div>
 
             <div class="controlGroup">
                 <label>✂️ Crop Size:</label>
-                <select id="cropSize" onchange="applyCropEffect()">
+                <select id="cropSize" onchange="applyPhotoTransformations()">
                     <option value="free">Free Crop (Original)</option>
                     <option value="square">Square (1:1)</option>
                     <option value="portrait">Portrait (4:5)</option>
@@ -421,7 +422,7 @@
                 </select>
             </div>
 
-            <button class="button" style="width:100%; margin-top:10px;" onclick="saveProcessedPhoto()">Save Photo</button>
+            <button class="button" style="width:100%; margin-top:10px;" onclick="saveProcessedPhoto()">Save Full HD Photo</button>
         </div>
 
         <br>
@@ -616,13 +617,13 @@
         }
         const post = document.createElement("div");
         post.className = "post";
-        post.innerHTML = "<div class='postUser'>👤 You</div><div class='postText'>" + text + "</div>";
+        post.innerHTML = "<div class='postUser'>👤 You</div><div class='postText'>" + text + " /div>";
         document.getElementById("chatHome").appendChild(post);
         document.getElementById("publishText").value = "";
         showChatPage("chatHome");
     }
 
-    /* PHOTO EDITOR FUNCTIONALITY */
+    /* PHOTO EDITOR FUNCTIONALITY WITH FULL HD & MB/RESOLUTION SUPPORT */
     const photoInput = document.getElementById("photoInput");
     const imagePreview = document.getElementById("imagePreview");
     const editorControls = document.getElementById("editorControls");
@@ -638,14 +639,17 @@
                 imagePreview.style.display = "block";
                 editorControls.style.display = "block";
                 document.getElementById("cropSize").value = "free";
+                document.getElementById("hqMode").value = "hd";
             };
             reader.readAsDataURL(file);
         }
     });
 
-    function applyCropEffect() {
+    function applyPhotoTransformations() {
         if (!originalImageSrc) return;
         const cropVal = document.getElementById("cropSize").value;
+        const hqModeVal = document.getElementById("hqMode").value;
+        
         const img = new Image();
         img.src = originalImageSrc;
         img.onload = function() {
@@ -654,48 +658,75 @@
             let w = img.width;
             let h = img.height;
 
+            // Crop Calculations
+            let cropX = 0, cropY = 0, cropW = w, cropH = h;
             if (cropVal === "square") {
                 let size = Math.min(w, h);
-                canvas.width = size;
-                canvas.height = size;
-                ctx.drawImage(img, (w - size) / 2, (h - size) / 2, size, size, 0, 0, size, size);
+                cropW = size; cropH = size;
+                cropX = (w - size) / 2; cropY = (h - size) / 2;
             } else if (cropVal === "portrait") {
-                let targetH = h;
-                let targetW = h * (4 / 5);
-                if (targetW > w) {
-                    targetW = w;
-                    targetH = w * (5 / 4);
-                }
-                canvas.width = targetW;
-                canvas.height = targetH;
-                ctx.drawImage(img, (w - targetW) / 2, (h - targetH) / 2, targetW, targetH, 0, 0, targetW, targetH);
+                cropH = h;
+                cropW = h * (4 / 5);
+                if (cropW > w) { cropW = w; cropH = w * (5 / 4); }
+                cropX = (w - cropW) / 2; cropY = (h - cropH) / 2;
             } else if (cropVal === "landscape") {
-                let targetW = w;
-                let targetH = w * (9 / 16);
-                if (targetH > h) {
-                    targetH = h;
-                    targetW = h * (16 / 9);
-                }
-                canvas.width = targetW;
-                canvas.height = targetH;
-                ctx.drawImage(img, (w - targetW) / 2, (h - targetH) / 2, targetW, targetH, 0, 0, targetW, targetH);
-            } else {
-                canvas.width = w;
-                canvas.height = h;
-                ctx.drawImage(img, 0, 0);
+                cropW = w;
+                cropH = w * (9 / 16);
+                if (cropH > h) { cropH = h; cropW = h * (16 / 9); }
+                cropX = (w - cropW) / 2; cropY = (h - cropH) / 2;
             }
-            imagePreview.src = canvas.toDataURL('image/png');
+
+            // Quality & Resolution (MB / Full HD / 4K) scaling
+            let targetW = cropW;
+            let targetH = cropH;
+
+            if (hqModeVal === "hd" && targetW < 1920) {
+                let scale = 1920 / targetW;
+                targetW = 1920;
+                targetH = cropH * scale;
+            } else if (hqModeVal === "ultra") {
+                let scale = 3840 / targetW;
+                targetW = 3840;
+                targetH = cropH * scale;
+            } else if (hqModeVal === "compressed") {
+                targetW = cropW * 0.5;
+                targetH = cropH * 0.5;
+            }
+
+            canvas.width = targetW;
+            canvas.height = targetH;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, targetW, targetH);
+            
+            // Output format based on quality selection (PNG for HD/Ultra to retain max MB/sharpness, JPEG for compressed)
+            let mimeType = (hqModeVal === "compressed") ? "image/jpeg" : "image/png";
+            let qualitySetting = (hqModeVal === "compressed") ? 0.7 : 1.0;
+            
+            imagePreview.src = canvas.toDataURL(mimeType, qualitySetting);
         };
     }
+
+    // Trigger update when quality/resolution dropdown changes
+    document.getElementById("hqMode").addEventListener("change", applyPhotoTransformations);
 
     function saveProcessedPhoto() {
         if (!imagePreview.src) {
             alert("Please select a photo first!");
             return;
         }
+        const hqModeVal = document.getElementById("hqMode").value;
         const uniqueId = Date.now();
         const link = document.createElement('a');
-        link.download = `Edited-Photo-${uniqueId}.png`;
+        
+        if (hqModeVal === "compressed") {
+            link.download = `Compressed-Photo-${uniqueId}.jpg`;
+        } else if (hqModeVal === "ultra") {
+            link.download = `4K-Ultra-Photo-${uniqueId}.png`;
+        } else {
+            link.download = `Full-HD-Photo-${uniqueId}.png`;
+        }
+
         link.href = imagePreview.src;
         document.body.appendChild(link);
         link.click();
