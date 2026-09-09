@@ -159,6 +159,7 @@
             border-radius: 12px;
             display: none;
             margin: 15px auto;
+            object-fit: contain;
         }
 
         .editorControls {
@@ -437,8 +438,8 @@
 
             <div class="controlGroup">
                 <label>✂️ Crop Size:</label>
-                <select id="cropSize">
-                    <option value="free">Free Crop</option>
+                <select id="cropSize" onchange="applyCropEffect()">
+                    <option value="free">Free Crop (Original)</option>
                     <option value="square">Square (1:1)</option>
                     <option value="portrait">Portrait (4:5)</option>
                     <option value="landscape">Landscape (16:9)</option>
@@ -668,19 +669,68 @@
     const photoInput = document.getElementById("photoInput");
     const imagePreview = document.getElementById("imagePreview");
     const editorControls = document.getElementById("editorControls");
+    let originalImageSrc = "";
 
     photoInput.addEventListener("change", function() {
         const file = this.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                imagePreview.src = e.target.result;
+                originalImageSrc = e.target.result;
+                imagePreview.src = originalImageSrc;
                 imagePreview.style.display = "block";
                 editorControls.style.display = "block";
+                document.getElementById("cropSize").value = "free";
             };
             reader.readAsDataURL(file);
         }
     });
+
+    // Dynamic Crop Preview Function
+    function applyCropEffect() {
+        if (!originalImageSrc) return;
+        const cropVal = document.getElementById("cropSize").value;
+        const img = new Image();
+        img.src = originalImageSrc;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            let w = img.width;
+            let h = img.height;
+
+            if (cropVal === "square") {
+                let size = Math.min(w, h);
+                canvas.width = size;
+                canvas.height = size;
+                ctx.drawImage(img, (w - size) / 2, (h - size) / 2, size, size, 0, 0, size, size);
+            } else if (cropVal === "portrait") {
+                let targetH = h;
+                let targetW = h * (4 / 5);
+                if (targetW > w) {
+                    targetW = w;
+                    targetH = w * (5 / 4);
+                }
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(img, (w - targetW) / 2, (h - targetH) / 2, targetW, targetH, 0, 0, targetW, targetH);
+            } else if (cropVal === "landscape") {
+                let targetW = w;
+                let targetH = w * (9 / 16);
+                if (targetH > h) {
+                    targetH = h;
+                    targetW = h * (16 / 9);
+                }
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(img, (w - targetW) / 2, (h - targetH) / 2, targetW, targetH, 0, 0, targetW, targetH);
+            } else {
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0);
+            }
+            imagePreview.src = canvas.toDataURL('image/png');
+        };
+    }
 
     function saveProcessedPhoto() {
         if (!imagePreview.src) {
@@ -688,9 +738,10 @@
             return;
         }
 
-        // Direct Download Trigger without popup alerts
+        // Unique Timestamp ID to allow downloading multiple times without conflict
+        const uniqueId = Date.now();
         const link = document.createElement('a');
-        link.download = 'Edited-Photo-EditAI.png';
+        link.download = `Edited-Photo-EditAI-${uniqueId}.png`;
         link.href = imagePreview.src;
         document.body.appendChild(link);
         link.click();
@@ -702,6 +753,7 @@
         imagePreview.src = "";
         imagePreview.style.display = "none";
         editorControls.style.display = "none";
+        originalImageSrc = "";
     }
 </script>
 
