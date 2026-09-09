@@ -1,461 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EditAI Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+    <title>EditAI Chat - AI Editing & Chat</title>
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f7fb;
-    color: #111827;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-button {
-    font-family: inherit;
-}
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #111827;
+        }
 
-header {
-    background: white;
-    padding: 18px 7%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
+        header {
+            background: white;
+            padding: 18px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
 
-.logo {
-    font-size: 25px;
-    font-weight: bold;
-}
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+        }
 
-nav a {
-    margin-left: 18px;
-    text-decoration: none;
-    color: #333;
-}
+        nav a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+        }
 
-.hero {
-    text-align: center;
-    padding: 70px 20px;
-}
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
 
-.hero h1 {
-    font-size: 45px;
-    margin-bottom: 15px;
-}
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 18px;
+        }
 
-.hero p {
-    font-size: 19px;
-    color: #666;
-    margin-bottom: 25px;
-}
+        .hero p {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 30px;
+        }
 
-.button {
-    display: inline-block;
-    padding: 13px 25px;
-    background: #111827;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    margin: 5px;
-    font-size: 16px;
-}
+        .button {
+            display: inline-block;
+            padding: 14px 28px;
+            background: #111827;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 5px;
+        }
 
-.section {
-    padding: 50px 7%;
-    text-align: center;
-}
+        .section {
+            padding: 50px 8%;
+            text-align: center;
+        }
 
-.section h2 {
-    font-size: 30px;
-    margin-bottom: 25px;
-}
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
 
-.editor {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 25px;
-    border-radius: 15px;
-}
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
 
-#imagePreview {
-    max-width: 100%;
-    margin-top: 20px;
-    border-radius: 12px;
-    display: none;
-}
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
 
-/* CHAT SCREEN & APP VIEWS */
-#chatScreen {
-    display: none;
-    min-height: 100vh;
-    background: #f5f7fb;
-}
+        .card h3 {
+            margin-bottom: 12px;
+        }
 
-.chatHeader {
-    background: white;
-    padding: 18px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
-}
+        .card p {
+            color: #666;
+            margin-bottom: 20px;
+        }
 
-.chatContent {
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
-    padding-bottom: 90px;
-}
-
-.post {
-    background: white;
-    padding: 18px;
-    border-radius: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.06);
-    text-align: left;
-}
-
-.postUser {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.postText {
-    color: #555;
-    margin-bottom: 12px;
-}
-
-.profile {
-    background: white;
-    padding: 30px 20px;
-    text-align: center;
-    border-radius: 15px;
-}
-
-.profilePhoto {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: #ddd;
-    margin: 0 auto 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 40px;
-}
-
-.publishBox {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: left;
-}
-
-.publishBox textarea {
-    width: 100%;
-    height: 120px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    resize: none;
-    font-size: 16px;
-}
-
-.messageBox {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: left;
-}
-
-.message {
-    background: #f0f2f5;
-    padding: 14px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-}
-
-.friend {
-    background: white;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    text-align: left;
-}
-
-.friendInfo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.friendPhoto {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* BOTTOM NAVIGATION */
-.bottomNav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 5px;
-    box-shadow: 0 -2px 10px rgba(0,0,0,.12);
-    z-index: 100;
-}
-
-.bottomNav button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 12px;
-    color: #333;
-}
-
-.bottomNav span {
-    display: block;
-    font-size: 22px;
-    margin-bottom: 3px;
-}
-
-footer {
-    background: #111827;
-    color: white;
-    text-align: center;
-    padding: 25px;
-    margin-top: 40px;
-}
-
-@media(min-width: 769px) {
-    .bottomNav {
-        max-width: 700px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: 15px 15px 0 0;
-    }
-}
-</style>
+        footer {
+            background: #111827;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- MAIN LANDING PAGE -->
-<div id="mainWebsite">
-
 <header>
-<div class="logo">EditAI Chat</div>
-<nav>
-<a href="#edit">Edit</a>
-<a href="#chat" onclick="openChat()">Chat</a>
-<a href="#download">App</a>
-</nav>
+    <div class="logo">EditAI Chat</div>
+
+    <nav>
+        <a href="#edit">Edit</a>
+        <a href="#chat">Chat</a>
+        <a href="#download">App</a>
+    </nav>
 </header>
 
 <section class="hero">
-<h1>EditAI Chat</h1>
-<p>AI Photo Editing and Chat Platform</p>
-<a class="button" href="#edit">🖼️ Edit Photo</a>
-<button class="button" onclick="openChat()">💬 Chat with Friends</button>
+
+    <h1>EditAI Chat</h1>
+
+    <p>
+        AI Editing and Chat Platform
+    </p>
+
+    <a class="button" href="#edit">
+        Start Editing
+    </a>
+
+    <a class="button" href="#chat">
+        Start Chat
+    </a>
+
 </section>
 
-<!-- EDIT SECTION -->
 <section class="section" id="edit">
-<h2>🖼️ Photo Editor</h2>
-<div class="editor">
-<p>Select a photo from your phone or computer.</p>
-<br>
-<input type="file" id="photoInput" accept="image/*">
-<img id="imagePreview">
-<br><br>
-<button class="button" onclick="removeImage()">Remove Photo</button>
-</div>
+
+    <h2>AI Editing</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>🖼️ Photo Editor</h3>
+            <p>Edit your photos with AI.</p>
+            <a class="button" href="#">Open</a>
+        </div>
+
+        <div class="card">
+            <h3>🎬 Video Editor</h3>
+            <p>Edit your videos easily.</p>
+            <a class="button" href="#">Open</a>
+        </div>
+
+        <div class="card">
+            <h3>✨ Background Remover</h3>
+            <p>Remove backgrounds from images.</p>
+            <a class="button" href="#">Open</a>
+        </div>
+
+        <div class="card">
+            <h3>🤖 AI Image Generator</h3>
+            <p>Create images using AI.</p>
+            <a class="button" href="#">Open</a>
+        </div>
+
+    </div>
+
 </section>
 
-<!-- DOWNLOAD APP SECTION -->
+<section class="section" id="chat">
+
+    <h2>💬 Chat with Friends</h2>
+
+    <p>
+        Connect and chat with your friends on EditAI Chat.
+    </p>
+
+    <br>
+
+    <a class="button" href="#">
+        Open Chat
+    </a>
+
+</section>
+
 <section class="section" id="download">
-<h2>📱 EditAI Chat App</h2>
-<p>Android app coming soon.</p>
-<button class="button" onclick="alert('Download started!')">Download App</button>
+
+    <h2>📱 EditAI Chat App</h2>
+
+    <p>
+        Download the EditAI Chat Android App.
+    </p>
+
+    <br>
+
+    <a class="button" href="#">
+        Download App
+    </a>
+
 </section>
 
 <footer>
-<p>© 2026 EditAI Chat</p>
+
+    <p>© 2026 EditAI Chat. All rights reserved.</p>
+
 </footer>
-
-</div>
-
-
-<!-- CHAT APPLICATION SCREEN -->
-<div id="chatScreen">
-
-<div class="chatHeader">EditAI Chat</div>
-
-<div class="chatContent">
-
-<!-- CHAT HOME -->
-<div id="chatHome">
-<h2>🏠 Home</h2>
-<br>
-<div class="post">
-<div class="postUser">👤 EditAI User</div>
-<div class="postText">Welcome to EditAI Chat! 🎉</div>
-<button class="button">❤️ Like</button>
-</div>
-<div class="post">
-<div class="postUser">👤 Friend</div>
-<div class="postText">Having a great day! 😊</div>
-<button class="button">❤️ Like</button>
-</div>
-</div>
-
-<!-- PROFILE PAGE -->
-<div id="profilePage" style="display:none">
-<h2>👤 Profile</h2>
-<br>
-<div class="profile">
-<div class="profilePhoto">👤</div>
-<h2>My Profile</h2>
-<p style="color:#777;margin-top:8px">EditAI User</p>
-<br>
-<button class="button" onclick="alert('Edit Profile clicked')">Edit Profile</button>
-</div>
-</div>
-
-<!-- PUBLISH PAGE -->
-<div id="publishPage" style="display:none">
-<h2>➕ Publish</h2>
-<br>
-<div class="publishBox">
-<textarea id="publishText" placeholder="What's on your mind?"></textarea>
-<br><br>
-<button class="button" onclick="publishPost()">Publish</button>
-</div>
-</div>
-
-<!-- MESSAGES PAGE -->
-<div id="messagesPage" style="display:none">
-<h2>💬 Messages</h2>
-<br>
-<div class="messageBox">
-<div class="message"><b>Friend 1:</b> Hello! How are you?</div>
-<div class="message"><b>Friend 2:</b> Hey! Welcome to EditAI.</div>
-<div class="message"><b>Friend 3:</b> Let's chat!</div>
-</div>
-</div>
-
-<!-- FRIENDS PAGE -->
-<div id="friendsPage" style="display:none">
-<h2>👥 Friends</h2>
-<br>
-<div class="friend">
-<div class="friendInfo">
-<div class="friendPhoto">👤</div>
-<div><b>Friend 1</b><br><small>Online</small></div>
-</div>
-<button class="button" onclick="openChatSection('messagesPage')">Chat</button>
-</div>
-<div class="friend">
-<div class="friendInfo">
-<div class="photo friendPhoto">👤</div>
-<div><b>Friend 2</b><br><small>Online</small></div>
-</div>
-<button class="button" onclick="openChatSection('messagesPage')">Chat</button>
-</div>
-</div>
-
-</div>
-
-<!-- BOTTOM NAVIGATION -->
-<div class="bottomNav">
-<button onclick="openChatSection('chatHome')"><span>🏠</span>Home</button>
-<button onclick="openChatSection('friendsPage')"><span>👥</span>Friends</button>
-<button onclick="openChatSection('publishPage')"><span>➕</span>Publish</button>
-<button onclick="openChatSection('messagesPage')"><span>💬</span>Messages</button>
-<button onclick="openChatSection('profilePage')"><span>👤</span>Profile</button>
-</div>
-
-</div>
-
-
-<script>
-/* TRANSITION TO CHAT APP */
-function openChat() {
-    document.getElementById("mainWebsite").style.display = "none";
-    document.getElementById("chatScreen").style.display = "block";
-    openChatSection("chatHome");
-}
-
-/* CHAT NAVIGATION */
-function openChatSection(pageId) {
-    const pages = ["chatHome", "profilePage", "publishPage", "messagesPage", "friendsPage"];
-    pages.forEach(function(p) {
-        document.getElementById(p).style.display = "none";
-    });
-    document.getElementById(pageId).style.display = "block";
-}
-
-/* PUBLISH NEW POST */
-function publishPost() {
-    const text = document.getElementById("publishText").value.trim();
-    if(text === "") {
-        alert("Please write something first.");
-        return;
-    }
-    const post = document.createElement("div");
-    post.className = "post";
-    post.innerHTML = "<div class='postUser'>👤 You</div><div class='postText'>" + text + "</div>";
-    document.getElementById("chatHome").insertBefore(post, document.getElementById("chatHome").children[2]);
-    document.getElementById("publishText").value = "";
-    openChatSection("chatHome");
-}
-
-/* PHOTO EDITOR PREVIEW */
-const photoInput = document.getElementById("photoInput");
-const imagePreview = document.getElementById("imagePreview");
-
-photoInput.addEventListener("change", function() {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            imagePreview.src = e.target.result;
-            imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-function removeImage() {
-    photoInput.value = "";
-    imagePreview.src = "";
-    imagePreview.style.display = "none";
-}
-</script>
 
 </body>
 </html>
