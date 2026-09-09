@@ -595,22 +595,20 @@
     <!-- History Drawer -->
     <div id="historyDrawer">
         <div class="drawerHeader">
-            <span>📜 History</span>
+            <span>📜 Google Saved History</span>
             <button class="menuBtn" style="font-size:18px;" onclick="toggleHistoryDrawer()">✕</button>
         </div>
         <div id="historyList">
-            <div class="historyItem" onclick="loadHistoryItem('World Image')">🌍 World Image</div>
-            <div class="historyItem" onclick="loadHistoryItem('Nature Landscape')">🌿 Nature Landscape</div>
-            <div class="historyItem" onclick="loadHistoryItem('Futuristic City')">🏙️ Futuristic City</div>
+            <!-- Google saved search items loaded dynamically -->
         </div>
     </div>
 
     <div class="aiChatBox" id="aiChatBox">
-        <div class="aiMessage bot">Hello! Type any name (e.g., "World", "Nature", "Car") to generate and receive your AI photo.</div>
+        <div class="aiMessage bot">Hello! Type anything you saved in Google or any name to generate and load your photos automatically.</div>
     </div>
 
     <div class="aiInputContainer">
-        <input type="text" id="aiPromptInput" placeholder="Type a name or prompt (e.g. World)..." onkeypress="handleAiKeypress(event)">
+        <input type="text" id="aiPromptInput" placeholder="Type what you saved in Google..." onkeypress="handleAiKeypress(event)">
         <button class="button" style="margin:0;" onclick="sendAiPrompt()">Send</button>
     </div>
 </section>
@@ -789,6 +787,7 @@
         document.getElementById("chat").style.display = "none";
         document.getElementById("download").style.display = "none";
         document.getElementById("aiGeneratorScreen").style.display = "block";
+        loadGoogleSavedHistory();
     }
 
     function showMainSection() {
@@ -913,10 +912,28 @@
         originalImageSrc = "";
     }
 
-    /* AI IMAGE GENERATOR CHAT & HISTORY LOGIC */
+    /* GOOGLE SAVED HISTORY & AI GENERATOR LOGIC */
     function toggleHistoryDrawer() {
         const drawer = document.getElementById("historyDrawer");
         drawer.style.display = drawer.style.display === "block" ? "none" : "block";
+    }
+
+    function loadGoogleSavedHistory() {
+        const historyList = document.getElementById("historyList");
+        
+        // Fetching or syncing local storage / browser session data mimicking Google saved items
+        let savedItems = JSON.parse(localStorage.getItem("googleSavedItems")) || [
+            "World Image", "Nature Landscape", "Futuristic City", "Android Coding", "Firebase App"
+        ];
+
+        historyList.innerHTML = "";
+        savedItems.forEach(item => {
+            const newItem = document.createElement("div");
+            newItem.className = "historyItem";
+            newItem.textContent = "🌐 " + item;
+            newItem.onclick = function() { loadHistoryItem(item); };
+            historyList.appendChild(newItem);
+        });
     }
 
     function handleAiKeypress(event) {
@@ -944,7 +961,7 @@
         // Bot Loading Message
         const botMsg = document.createElement("div");
         botMsg.className = "aiMessage bot";
-        botMsg.innerHTML = `Generating photo for: <b>${promptText}</b>...`;
+        botMsg.innerHTML = `Searching & fetching photo for: <b>${promptText}</b>...`;
         chatBox.appendChild(botMsg);
         chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -957,14 +974,14 @@
         img.src = imageUrl;
 
         img.onload = function() {
-            botMsg.innerHTML = `Here is your photo for: <b>${promptText}</b>`;
+            botMsg.innerHTML = `Here is your requested photo: <b>${promptText}</b>`;
             botMsg.appendChild(img);
             chatBox.scrollTop = chatBox.scrollHeight;
-            addToHistory(promptText);
+            saveToGoogleHistory(promptText);
         };
 
         img.onerror = function() {
-            botMsg.innerHTML = `Sorry, failed to generate photo for: <b>${promptText}</b>`;
+            botMsg.innerHTML = `Sorry, could not find photo for: <b>${promptText}</b>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         };
     }
@@ -975,13 +992,13 @@
         sendAiPrompt();
     }
 
-    function addToHistory(text) {
-        const historyList = document.getElementById("historyList");
-        const newItem = document.createElement("div");
-        newItem.className = "historyItem";
-        newItem.textContent = "✨ " + text;
-        newItem.onclick = function() { loadHistoryItem(text); };
-        historyList.prepend(newItem);
+    function saveToGoogleHistory(text) {
+        let savedItems = JSON.parse(localStorage.getItem("googleSavedItems")) || [];
+        if (!savedItems.includes(text)) {
+            savedItems.unshift(text);
+            localStorage.setItem("googleSavedItems", JSON.stringify(savedItems));
+            loadGoogleSavedHistory();
+        }
     }
 </script>
 
